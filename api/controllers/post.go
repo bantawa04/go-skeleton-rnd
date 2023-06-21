@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"boilerplate-api/api/services"
+	"boilerplate-api/api/validators"
 	"boilerplate-api/errors"
 	"boilerplate-api/infrastructure"
 	"boilerplate-api/models"
@@ -17,16 +18,19 @@ import (
 type PostController struct {
 	logger      infrastructure.Logger
 	PostService services.PostService
+	validator   validators.PostValidator
 }
 
 // NewPostController constructor
 func NewPostController(
 	logger infrastructure.Logger,
 	PostService services.PostService,
+	validator validators.PostValidator,
 ) PostController {
 	return PostController{
 		logger:      logger,
 		PostService: PostService,
+		validator:   validator,
 	}
 }
 
@@ -46,6 +50,14 @@ func (cc PostController) CreatePost(c *gin.Context) {
 	if err := c.ShouldBindJSON(&post); err != nil {
 		cc.logger.Zap.Error("Error [CreatePost] (ShouldBindJson) : ", err)
 		err := errors.BadRequest.Wrap(err, "Failed to bind Post")
+		responses.HandleError(c, err)
+		return
+	}
+
+	if validationErr := cc.validator.Validate.Struct(post); validationErr != nil {
+		err := errors.BadRequest.Wrap(validationErr, "Validation error")
+		err = errors.SetCustomMessage(err, "Invalid input information")
+		err = errors.AddErrorContextBlock(err, cc.validator.GenerateValidationResponse(validationErr))
 		responses.HandleError(c, err)
 		return
 	}

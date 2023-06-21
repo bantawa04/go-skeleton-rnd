@@ -18,18 +18,10 @@ func NewPostValidator() PostValidator {
 
 	_ = v.RegisterValidation("title", func(fl validator.FieldLevel) bool {
 		value := fl.Field().String()
-		if value == "" {
-			return false
-		}
-		if len(value) > 255 {
+		if len(value) <= 255 {
 			return false
 		}
 		return true
-	})
-
-	_ = v.RegisterValidation("content", func(fl validator.FieldLevel) bool {
-		value := fl.Field().String()
-		return value != ""
 	})
 
 	return PostValidator{

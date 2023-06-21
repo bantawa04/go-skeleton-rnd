@@ -3,8 +3,8 @@ package models
 // Post DB model
 type Post struct {
 	Base
-	Title   string `json:"title"`
-	Content string `json:"content"`
+	Title   string `json:"title" validate:"required,title"`
+	Content string `json:"content" validate:"required"`
 }
 
 // TableName returns table name of model
